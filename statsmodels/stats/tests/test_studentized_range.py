@@ -1420,7 +1420,6 @@ def test_qrange():
                     assert_equal(abs(1 - q_range_other / q_target_pascal) < 0.0025, True)
 
 
-if __name__ == "__main__":
-    test_prange()
-    test_qrange()
-
+# if __name__ == "__main__":
+#     test_prange()
+#     test_qrange()
