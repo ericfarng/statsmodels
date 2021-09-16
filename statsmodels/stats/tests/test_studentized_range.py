@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Sep 15 2021
-
 Author: Eric Farng
 
 Notes
@@ -18,7 +17,10 @@ http://jaguar.fcav.unesp.br/RME/fasciculos/v25/v25_n1/A8_Daniel.pdf
 """
 
 import statsmodels.stats.studentized_range as tukey
+import statsmodels.stats.libqsturng.qsturng_ as qsturng
 from numpy.testing import assert_equal
+import numpy as np
+
 
 
 def test_prange():
@@ -569,13 +571,25 @@ def test_prange():
                 p_range = tukey.prange(test_q, test_r, test_v, 1)
                 p_target_r = target_r[str(test_q) + "," + str(test_r) + "," + str(test_v)]
                 p_target_pascal = target_pascal[str(test_q) + "," + str(test_r) + "," + str(test_v)]
-                print("R", '{:.20f}'.format(abs(1 - p_range / p_target_r)), test_q, test_r, test_v)
-                print("Pascal", '{:.20f}'.format(abs(1 - p_range / p_target_pascal)), test_q, test_r, test_v)
+                # print("R", '{:.20f}'.format(abs(1 - p_range / p_target_r)), test_q, test_r, test_v)
+                # print("Pascal", '{:.20f}'.format(abs(1 - p_range / p_target_pascal)), test_q, test_r, test_v)
                 if test_q == 31.1 and test_r == 23 and test_v == 3.6:
                     pass  # larger difference ~0.0002
                 else:
                     assert_equal(abs(1 - p_range/p_target_r) < 0.00009, True)
                 assert_equal(abs(1 - p_range/p_target_pascal) < 0.00000004, True)
+
+                # take a look at statsmodels.stats.libqsturng
+                p_range_other = qsturng.psturng(test_q, test_r, test_v)
+                if isinstance(p_range_other, np.ndarray):
+                    p_range_other = p_range_other[0]
+                # print("R", '{:.20f}'.format(abs(1 - p_range_other / p_target_r)), test_q, test_r, test_v)
+                # print("Pascal", '{:.20f}'.format(abs(1 - p_range_other / p_target_pascal)), test_q, test_r, test_v)
+                if test_q == 1.3:
+                    pass  # larger difference 263399.731727232
+                else:
+                    assert_equal(abs(1 - p_range_other/p_target_r) < 15, True)
+                    assert_equal(abs(1 - p_range_other/p_target_pascal) < 15, True)
 
 
 def test_qrange():
@@ -1380,7 +1394,7 @@ def test_qrange():
                 q_target_r = target_r[str(test_p) + "," + str(test_r) + "," + str(test_v)]
                 q_target_pascal = target_pascal["{:.4f}".format(test_p) + "," + str(test_r) + "," + str(test_v)]
                 if q_target_r is not None:
-                    print("R", '{:.20f}'.format(abs(1 - q_range / q_target_r)), test_p, test_r, test_v)
+                    # print("R", '{:.20f}'.format(abs(1 - q_range / q_target_r)), test_p, test_r, test_v)
                     if test_p == 0.992 and test_v == 3.6:
                         pass  # this is further off ~0.002
                     elif test_p == 0.02 and test_v == 7.9:
@@ -1388,11 +1402,25 @@ def test_qrange():
                     else:
                         assert_equal(abs(1 - q_range/q_target_r) < 0.00006, True)
                 if q_target_pascal is not None:
-                    print("Pascal", '{:.20f}'.format(abs(1 - q_range / q_target_pascal)), test_p, test_r, test_v)
+                    # print("Pascal", '{:.20f}'.format(abs(1 - q_range / q_target_pascal)), test_p, test_r, test_v)
                     assert_equal(abs(1 - q_range / q_target_pascal) <  0.00000000002, True)
 
+                # take a look at statsmodels.stats.libqsturng
+                if test_p < 0.1:
+                    continue  # not supported
+                elif test_p == 0.21:
+                    continue  # larger difference 0.05
+                q_range_other = qsturng.qsturng(test_p, test_r, test_v)
 
-# if __name__ == "__main__":
-#     test_prange()
-#     test_qrange()
+                if q_target_r is not None:
+                    # print("R", '{:.20f}'.format(abs(1 - q_range_other / q_target_r)), test_p, test_r, test_v)
+                    assert_equal(abs(1 - q_range_other/q_target_r) < 0.0025, True)
+                if q_target_pascal is not None:
+                    # print("Pascal", '{:.20f}'.format(abs(1 - q_range_other / q_target_pascal)), test_p, test_r, test_v)
+                    assert_equal(abs(1 - q_range_other / q_target_pascal) < 0.0025, True)
+
+
+if __name__ == "__main__":
+    test_prange()
+    test_qrange()
 
